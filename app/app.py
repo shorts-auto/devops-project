@@ -84,7 +84,7 @@ def api_status():
             'error': str(e)
         }), 500
 
-@app.route('/api/init-db')
+@app.route('/api/init-db', methods=['GET', 'POST'])
 def init_db():
     """Initialize database with sample tables"""
     try:
