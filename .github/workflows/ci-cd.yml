@@ -15,6 +15,10 @@ env:
   ECR_REPOSITORY: myapp
   IMAGE_TAG: ${{ github.sha }}
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   test:
     name: Run Tests
