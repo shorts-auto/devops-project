@@ -1,8 +1,8 @@
 from flask import Flask, jsonify, render_template_string
 from flask_cors import CORS
 import os
-import psycopg2
-from psycopg2 import sql
+import psycopg
+from psycopg import sql
 import logging
 from datetime import datetime
 
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # Database configuration
 DB_CONFIG = {
     'host': os.environ.get('DB_HOST', 'localhost'),
-    'database': os.environ.get('DB_NAME', 'appdb'),
+    'dbname': os.environ.get('DB_NAME', 'appdb'),
     'user': os.environ.get('DB_USER', 'admin'),
     'password': os.environ.get('DB_PASSWORD', ''),
     'port': os.environ.get('DB_PORT', 5432)
@@ -28,7 +28,7 @@ DB_CONFIG = {
 def get_db_connection():
     """Create and return a database connection"""
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        conn = psycopg.connect(**DB_CONFIG)
         return conn
     except Exception as e:
         logger.error(f"Database connection error: {str(e)}")
