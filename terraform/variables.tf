@@ -101,6 +101,18 @@ variable "enable_deletion_protection" {
   default     = false
 }
 
+variable "ecr_repository_name" {
+  description = "Name of the ECR repository"
+  type        = string
+  default     = "myapp"
+}
+
+variable "project_name" {
+  description = "Project name for tags"
+  type        = string
+  default     = "myapp"
+}
+
 variable "tags" {
   description = "Common tags for all resources"
   type        = map(string)
