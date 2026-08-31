@@ -8,7 +8,7 @@ db_name                  = "appdb"
 db_username              = "admin"
 db_password              = "CHANGE_ME_IN_AWS_SECRETS_MANAGER"  # Use AWS Secrets Manager in production
 enable_backup            = true
-backup_retention_days    = 30
+backup_retention_days    = 7
 enable_deletion_protection = true
 
 tags = {
