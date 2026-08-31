@@ -8,7 +8,7 @@ db_name                  = "appdb"
 db_username              = "admin"
 db_password              = "DevPassword123!"  # Change this in production
 enable_backup            = true
-backup_retention_days    = 7
+backup_retention_days    = 0
 enable_deletion_protection = false
 
 tags = {
