@@ -202,7 +202,7 @@ jobs:
 
       - name: Deploy to staging environment
         run: |
-          echo "Deploying to staging environment...."
+          echo "Deploying to staging environment..."
           # Add your staging deployment commands here
           # Example: aws ecs update-service --cluster staging --service myapp --force-new-deployment
 
