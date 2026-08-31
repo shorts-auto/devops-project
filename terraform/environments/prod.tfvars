@@ -1,4 +1,4 @@
-aws_region               = "us-east-1"
+aws_region               = "ap-south-1"
 environment              = "prod"
 app_name                 = "myapp"
 instance_type            = "t3.small"

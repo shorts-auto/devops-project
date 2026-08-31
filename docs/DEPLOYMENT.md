@@ -72,7 +72,7 @@ aws configure
 # Option 2: Environment variables
 export AWS_ACCESS_KEY_ID="your-access-key"
 export AWS_SECRET_ACCESS_KEY="your-secret-key"
-export AWS_DEFAULT_REGION="us-east-1"
+export AWS_DEFAULT_REGION="ap-south-1"
 
 # Option 3: AWS credentials file
 cat > ~/.aws/credentials << EOF
@@ -166,7 +166,7 @@ cd app
 docker build -t myapp:latest .
 
 # Tag for ECR
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <your-ecr-uri>
+aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin <your-ecr-uri>
 docker tag myapp:latest <your-ecr-uri>/myapp:latest
 docker push <your-ecr-uri>/myapp:latest
 ```
