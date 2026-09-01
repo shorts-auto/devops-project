@@ -14,7 +14,7 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-# IAM Role for EC2 instance
+# IAM Role for EC2 instances
 resource "aws_iam_role" "ec2_role" {
   name = "${var.app_name}-ec2-role-${var.environment}"
 
