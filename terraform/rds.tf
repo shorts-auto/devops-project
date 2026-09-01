@@ -8,7 +8,7 @@ resource "aws_db_subnet_group" "main" {
   }
 }
 
-# RDS Instance
+# RDS Instances
 resource "aws_db_instance" "main" {
   identifier            = "${var.app_name}-db-${var.environment}"
   engine                = "postgres"
