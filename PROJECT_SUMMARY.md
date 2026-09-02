@@ -41,7 +41,7 @@
 - ✅ Build stage: Docker image build and push to ECR
 - ✅ Staging deployment: Automatic deployment on develop branch
 - ✅ Production deployment: Manual approval required on main branch
-- ✅ Notifications: Slack integration for deployment status
+- ✅ Notifications: Telegram integration for deployment status
 - ✅ Smoke tests: Post-deployment verification
 
 #### Application Containerization

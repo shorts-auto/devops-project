@@ -133,7 +133,7 @@ Implemented multi-stage GitHub Actions pipeline:
 - Security scanning before build
 - Separated staging/production deployments
 - Manual approval for production
-- Slack notifications
+- Telegram notifications
 
 ## Challenge 6: Application Containerization
 

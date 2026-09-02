@@ -201,7 +201,8 @@ aws secretsmanager create-secret \
 aws secretsmanager create-secret \
   --name myapp/api-keys \
   --secret-string '{
-    "slack_webhook": "https://hooks.slack.com/...",
+    "telegram_bot_token": "your-telegram-bot-token",
+    "telegram_chat_id": "your-telegram-chat-id",
     "docker_registry_token": "..."
   }'
 ```

@@ -62,6 +62,18 @@ resource "aws_iam_role_policy" "ec2_policy" {
       {
         Effect = "Allow"
         Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:DescribeRepositories",
+          "ecr:ListImages"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
           "ec2:DescribeVolumes",
           "ec2:DescribeTags",
           "ec2:DescribeInstances"
@@ -101,6 +113,8 @@ resource "aws_launch_template" "app" {
     DB_NAME     = var.db_name
     DB_USER     = var.db_username
     DB_PASSWORD = var.db_password
+    APP_NAME    = var.app_name
+    AWS_REGION  = var.aws_region
   }))
 
   lifecycle {

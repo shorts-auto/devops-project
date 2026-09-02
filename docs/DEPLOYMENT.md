@@ -345,7 +345,8 @@ GitHub Settings → Secrets and Variables → Actions
 Required secrets:
 - AWS_ACCESS_KEY_ID
 - AWS_SECRET_ACCESS_KEY
-- SLACK_WEBHOOK (optional)
+- TELEGRAM_BOT_TOKEN (optional)
+- TELEGRAM_CHAT_ID (optional)
 - DOCKER_REGISTRY_URL (optional)
 - SONAR_TOKEN (optional)
 ```

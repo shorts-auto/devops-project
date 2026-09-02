@@ -293,7 +293,8 @@ git push origin main
 ```
 AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY
-SLACK_WEBHOOK          # Optional, for notifications
+TELEGRAM_BOT_TOKEN     # Optional, for notifications
+TELEGRAM_CHAT_ID       # Optional, for notifications
 DOCKER_REGISTRY_URL
 ```
 
