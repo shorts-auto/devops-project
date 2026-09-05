@@ -15,7 +15,7 @@ class TestHealthEndpoints:
     
     def test_health_endpoint(self, client):
         """Test main health endpoint"""
-        response = client.get('/')
+        response = client.get('/health/live')
         assert response.status_code == 200
         data = response.get_json()
         assert data['status'] == 'healthy'

@@ -50,7 +50,7 @@ services:
       DB_PORT: 5432
       FLASK_ENV: production
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/ >/dev/null || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health/live >/dev/null || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

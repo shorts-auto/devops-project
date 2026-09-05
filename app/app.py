@@ -127,6 +127,7 @@ def get_db_connection():
         return None
 
 
+@app.route('/')
 @app.route('/dashboard')
 def dashboard():
     """Render the operations console."""
@@ -251,7 +252,7 @@ def incident_detail(incident_id):
     finally:
         conn.close()
 
-@app.route('/')
+@app.route('/health/live')
 def health():
     """Health check endpoint"""
     return jsonify({
