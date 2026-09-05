@@ -252,7 +252,15 @@ jobs:
         run: |
           refresh_id=$(aws autoscaling describe-instance-refreshes \
             --auto-scaling-group-name "$ASG_NAME" \
-            --query 'InstanceRefreshes[0].InstanceRefreshId' --output text)
+            --query 'InstanceRefreshes[?Status==`Pending` || Status==`InProgress`][0].InstanceRefreshId' \
+            --output text)
+          if [ "$refresh_id" = "None" ] || [ -z "$refresh_id" ]; then
+            refresh_id=$(aws autoscaling start-instance-refresh \
+              --auto-scaling-group-name "$ASG_NAME" \
+              --preferences MinHealthyPercentage=50,InstanceWarmup=300 \
+              --query 'InstanceRefreshId' --output text)
+            echo "Started ASG instance refresh: $refresh_id"
+          fi
           if [ "$refresh_id" != "None" ] && [ -n "$refresh_id" ]; then
             for attempt in {1..90}; do
               refresh_status=$(aws autoscaling describe-instance-refreshes \
