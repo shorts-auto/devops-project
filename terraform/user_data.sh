@@ -46,8 +46,10 @@ DB_HOST=${DB_HOST}
 DB_NAME=${DB_NAME}
 DB_USER=${DB_USER}
 DB_PASSWORD=$${DB_PASSWORD}
+DB_PORT=5432
 ENVIRONMENT=production
 EOF
+chmod 600 .env
 
 # Create a docker-compose file that runs the app container and exposes the ALB health endpoint
 cat > docker-compose.yml <<EOF
@@ -58,15 +60,13 @@ services:
     restart: always
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
-      DB_HOST: ${DB_HOST}
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: $${DB_PASSWORD}
       DB_PORT: 5432
       FLASK_ENV: production
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health/live >/dev/null || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/health/ready >/dev/null || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

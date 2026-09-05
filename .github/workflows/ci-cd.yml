@@ -296,7 +296,7 @@ jobs:
           fi
           echo "Deploying to SSM-online instances: $online_instance_ids"
 
-          commands='["set -e", "cd /opt/app", "docker-compose pull app", "docker-compose up -d --force-recreate app", "for attempt in $(seq 1 12); do if curl -fsS http://localhost:8000/health/live >/dev/null; then exit 0; fi; sleep 10; done; docker-compose ps; docker-compose logs --tail=100 app; exit 1"]'
+          commands='["set -e", "cd /opt/app", "docker-compose pull app", "docker-compose up -d --force-recreate app", "for attempt in $(seq 1 12); do if curl -fsS http://localhost:8000/health/ready >/dev/null; then exit 0; fi; sleep 10; done; docker-compose ps; docker-compose logs --tail=100 app; exit 1"]'
           command_id=$(aws ssm send-command \
             --instance-ids $online_instance_ids \
             --document-name AWS-RunShellScript \
