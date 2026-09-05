@@ -64,6 +64,41 @@ class TestStatusEndpoint:
             data = response.get_json()
             assert data['database'] == 'disconnected'
 
+
+class TestIncidentWorkflow:
+    """Test the incident tracking workflow."""
+
+    def test_dashboard_is_available(self, client):
+        response = client.get('/dashboard')
+        assert response.status_code == 200
+        assert b'Ops Console' in response.data
+        assert b'Report an incident' in response.data
+
+    def test_create_incident_requires_title(self, client):
+        mock_conn = MagicMock()
+        with patch('app.get_db_connection', return_value=mock_conn):
+            response = client.post('/api/incidents', json={'severity': 'high'})
+            assert response.status_code == 400
+            assert 'Title is required' in response.get_json()['error']
+
+    def test_create_incident_success(self, client):
+        mock_conn = MagicMock()
+        mock_cursor = MagicMock()
+        mock_cursor.fetchone.return_value = (
+            1, 'API latency', 'Requests are slow', 'high', 'open',
+            None, None
+        )
+        mock_conn.cursor.return_value = mock_cursor
+        with patch('app.get_db_connection', return_value=mock_conn):
+            response = client.post('/api/incidents', json={
+                'title': 'API latency',
+                'description': 'Requests are slow',
+                'severity': 'high'
+            })
+            assert response.status_code == 201
+            assert response.get_json()['status'] == 'open'
+            mock_conn.commit.assert_called()
+
 class TestInitDB:
     """Test database initialization endpoint"""
     

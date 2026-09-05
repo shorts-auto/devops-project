@@ -221,6 +221,7 @@ docker-compose up -d --build
 ### Accessing Services Locally
 
 - **Application**: http://localhost:8000
+- **Operations dashboard**: http://localhost:8000/dashboard
 - **Prometheus**: http://localhost:9090
 - **Grafana**: http://localhost:3000 (admin/admin)
 - **PostgreSQL**: localhost:5432
@@ -243,6 +244,16 @@ docker build -t myapp:latest -f app/Dockerfile app/
 # Run application locally
 flask --app app.py run --host=0.0.0.0 --port=8000
 ```
+
+### Application Workflow
+
+The operations dashboard provides a basic incident workflow backed by PostgreSQL:
+
+- Open `/dashboard` to report incidents and review the queue.
+- Use `GET /api/incidents` to list incidents, optionally filtered by status.
+- Use `POST /api/incidents` to create an incident with a title, description, and severity.
+- Use `PATCH /api/incidents/<id>` to move an incident between `open`, `investigating`, and `resolved`.
+- Use `DELETE /api/incidents/<id>` to remove an incident.
 
 ## 🔄 CI/CD Pipeline
 
