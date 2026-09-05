@@ -33,12 +33,19 @@ dpkg -i -E ./amazon-cloudwatch-agent.deb
 mkdir -p /opt/app
 cd /opt/app
 
+# Use the shared production secret so the app and RDS credentials stay aligned.
+if [ -n "${DB_SECRET_NAME}" ]; then
+  DB_PASSWORD=$(aws secretsmanager get-secret-value \
+    --secret-id "${DB_SECRET_NAME}" \
+    --query SecretString --output text)
+fi
+
 # Create environment file
 cat > .env << EOF
 DB_HOST=${DB_HOST}
 DB_NAME=${DB_NAME}
 DB_USER=${DB_USER}
-DB_PASSWORD=${DB_PASSWORD}
+DB_PASSWORD=$${DB_PASSWORD}
 ENVIRONMENT=production
 EOF
 
@@ -55,7 +62,7 @@ services:
       DB_HOST: ${DB_HOST}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PASSWORD: $${DB_PASSWORD}
       DB_PORT: 5432
       FLASK_ENV: production
     healthcheck:

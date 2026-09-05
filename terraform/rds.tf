@@ -1,4 +1,26 @@
 # RDS Subnet Group
+resource "random_password" "db_password" {
+  count            = var.db_secret_name == "" ? 0 : 1
+  length           = 32
+  special          = true
+  override_special = "!#$%&*+-=?^_"
+}
+
+resource "aws_secretsmanager_secret" "db_password" {
+  count = var.db_secret_name == "" ? 0 : 1
+  name  = var.db_secret_name
+}
+
+resource "aws_secretsmanager_secret_version" "db_password" {
+  count         = var.db_secret_name == "" ? 0 : 1
+  secret_id     = aws_secretsmanager_secret.db_password[0].id
+  secret_string = random_password.db_password[0].result
+}
+
+locals {
+  database_password = var.db_secret_name == "" ? var.db_password : random_password.db_password[0].result
+}
+
 resource "aws_db_subnet_group" "main" {
   name       = "${var.app_name}-db-subnet-group-${var.environment}"
   subnet_ids = [aws_subnet.private_1.id, aws_subnet.private_2.id]
@@ -17,34 +39,40 @@ resource "aws_db_instance" "main" {
   allocated_storage     = var.db_allocated_storage
   db_name               = var.db_name
   username              = var.db_username
-  password              = var.db_password
+  password              = local.database_password
   db_subnet_group_name  = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.rds.id]
-  
+
   # Backup and maintenance
   backup_retention_period = var.backup_retention_days
   backup_window           = "03:00-04:00"
   maintenance_window      = "mon:04:00-mon:05:00"
+
   
   # High availability
   multi_az = var.environment == "prod" ? true : false
+
   
   # Deletion protection
   deletion_protection = var.enable_deletion_protection
+
   
   # Storage encryption
   storage_encrypted = true
   kms_key_id        = aws_kms_key.rds.arn
+
   
   # Performance insights
   performance_insights_enabled = var.environment == "prod" ? true : false
+
   
   # Logging
   enabled_cloudwatch_logs_exports = ["postgresql"]
+
   
   skip_final_snapshot       = var.environment == "dev" ? true : false
   final_snapshot_identifier = var.environment == "dev" ? null : "${var.app_name}-db-final-snapshot-${var.environment}-${formatdate("YYYY-MM-DD-hhmm", timestamp())}"
-  
+
   tags = {
     Name = "${var.app_name}-db-${var.environment}"
   }

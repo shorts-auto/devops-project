@@ -114,12 +114,13 @@ resource "aws_launch_template" "app" {
   }
 
   user_data = base64encode(templatefile("${path.module}/user_data.sh", {
-    DB_HOST     = aws_db_instance.main.endpoint
-    DB_NAME     = var.db_name
-    DB_USER     = var.db_username
-    DB_PASSWORD = var.db_password
-    APP_NAME    = var.app_name
-    AWS_REGION  = var.aws_region
+    DB_HOST        = aws_db_instance.main.endpoint
+    DB_NAME        = var.db_name
+    DB_USER        = var.db_username
+    DB_PASSWORD    = local.database_password
+    APP_NAME       = var.app_name
+    AWS_REGION     = var.aws_region
+    DB_SECRET_NAME = var.db_secret_name
   }))
 
   lifecycle {

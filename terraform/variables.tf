@@ -81,6 +81,13 @@ variable "db_password" {
   description = "Database master password"
   type        = string
   sensitive   = true
+  default     = ""
+}
+
+variable "db_secret_name" {
+  description = "Secrets Manager name containing the database master password"
+  type        = string
+  default     = ""
 }
 
 variable "enable_backup" {
