@@ -259,11 +259,38 @@ jobs:
             aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names "$ASG_NAME"
             exit 1
           fi
-          echo "Deploying to instances: $instance_ids"
+
+          online_instance_ids=""
+          for attempt in {1..30}; do
+            online_instance_ids=""
+            for instance_id in $instance_ids; do
+              ping_status=$(aws ssm describe-instance-information \
+                --filters "Key=InstanceIds,Values=$instance_id" \
+                --query 'InstanceInformationList[0].PingStatus' --output text)
+              if [ "$ping_status" = "Online" ]; then
+                online_instance_ids="$online_instance_ids $instance_id"
+              fi
+            done
+            online_instance_ids=$(echo "$online_instance_ids" | xargs)
+            expected_count=$(echo "$instance_ids" | wc -w)
+            online_count=$(echo "$online_instance_ids" | wc -w)
+            if [ "$online_count" -eq "$expected_count" ]; then
+              break
+            fi
+            echo "Waiting for all InService instances to become SSM-online (attempt $attempt/30)"
+            sleep 20
+          done
+
+          if [ -z "$online_instance_ids" ]; then
+            echo "No InService instances are online in SSM"
+            aws ssm describe-instance-information --output table
+            exit 1
+          fi
+          echo "Deploying to SSM-online instances: $online_instance_ids"
 
           commands='["set -e", "cd /opt/app", "docker-compose pull app", "docker-compose up -d --force-recreate app", "curl -fsS http://localhost:8000/health/live"]'
           command_id=$(aws ssm send-command \
-            --instance-ids $instance_ids \
+            --instance-ids $online_instance_ids \
             --document-name AWS-RunShellScript \
             --comment "Deploy ${GITHUB_SHA}" \
             --parameters "{\"commands\":$commands}" \
