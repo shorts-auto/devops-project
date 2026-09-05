@@ -164,7 +164,9 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'true'
 
       - name: Build, tag, and push image to Amazon ECR
         env:
@@ -246,12 +248,18 @@ jobs:
 
       - name: Deploy to production environment
         env:
-          INSTANCE_TAG: myapp-instance-prod
+          ASG_NAME: myapp-asg-prod
         run: |
-          instance_ids=$(aws ec2 describe-instances \
-            --filters "Name=tag:Name,Values=$INSTANCE_TAG" "Name=instance-state-name,Values=running" \
-            --query 'Reservations[].Instances[].InstanceId' --output text)
-          test -n "$instance_ids"
+          instance_ids=$(aws autoscaling describe-auto-scaling-groups \
+            --auto-scaling-group-names "$ASG_NAME" \
+            --query 'AutoScalingGroups[0].Instances[?LifecycleState==`InService`].InstanceId' \
+            --output text)
+          if [ -z "$instance_ids" ]; then
+            echo "No InService instances found in $ASG_NAME"
+            aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names "$ASG_NAME"
+            exit 1
+          fi
+          echo "Deploying to instances: $instance_ids"
 
           commands='["set -e", "cd /opt/app", "docker-compose pull app", "docker-compose up -d --force-recreate app", "curl -fsS http://localhost:8000/health/live"]'
           command_id=$(aws ssm send-command \
