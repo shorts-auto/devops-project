@@ -59,11 +59,11 @@ EOF
 
 # Resolve the ECR registry and pull the latest app image before starting the service.
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text 2>/dev/null || true)
-if [ -n "${ACCOUNT_ID}" ] && [ "${ACCOUNT_ID}" != "None" ]; then
-  ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-  aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin "${ECR_REGISTRY}"
-  docker pull "${ECR_REGISTRY}/${APP_NAME}:latest" || true
-  sed -i "s|image: .*|image: ${ECR_REGISTRY}/${APP_NAME}:latest|" docker-compose.yml
+if [ -n "$${ACCOUNT_ID}" ] && [ "$${ACCOUNT_ID}" != "None" ]; then
+  ECR_REGISTRY="$${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+  aws ecr get-login-password --region "${AWS_REGION}" | docker login --username AWS --password-stdin "$${ECR_REGISTRY}"
+  docker pull "$${ECR_REGISTRY}/${APP_NAME}:latest" || true
+  sed -i "s|image: .*|image: $${ECR_REGISTRY}/${APP_NAME}:latest|" docker-compose.yml
 fi
 
 # Start the application so the ALB target health checks can pass.
