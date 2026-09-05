@@ -250,6 +250,33 @@ jobs:
         env:
           ASG_NAME: myapp-asg-prod
         run: |
+          refresh_id=$(aws autoscaling describe-instance-refreshes \
+            --auto-scaling-group-name "$ASG_NAME" \
+            --query 'InstanceRefreshes[0].InstanceRefreshId' --output text)
+          if [ "$refresh_id" != "None" ] && [ -n "$refresh_id" ]; then
+            for attempt in {1..90}; do
+              refresh_status=$(aws autoscaling describe-instance-refreshes \
+                --auto-scaling-group-name "$ASG_NAME" \
+                --instance-refresh-ids "$refresh_id" \
+                --query 'InstanceRefreshes[0].Status' --output text)
+              case "$refresh_status" in
+                Successful)
+                  break
+                  ;;
+                Failed|Cancelled|RollbackFailed|RollbackSuccessful)
+                  echo "Instance refresh ended with status: $refresh_status"
+                  exit 1
+                  ;;
+              esac
+              echo "Waiting for ASG instance refresh (attempt $attempt/90): $refresh_status"
+              sleep 10
+            done
+            if [ "$refresh_status" != "Successful" ]; then
+              echo "Instance refresh did not complete within 15 minutes: $refresh_status"
+              exit 1
+            fi
+          fi
+
           instance_ids=$(aws autoscaling describe-auto-scaling-groups \
             --auto-scaling-group-names "$ASG_NAME" \
             --query 'AutoScalingGroups[0].Instances[?LifecycleState==`InService`].InstanceId' \
