@@ -281,8 +281,16 @@ jobs:
             sleep 20
           done
 
-          if [ -z "$online_instance_ids" ]; then
-            echo "No InService instances are online in SSM"
+          expected_count=$(echo "$instance_ids" | wc -w)
+          online_count=$(echo "$online_instance_ids" | wc -w)
+          if [ "$online_count" -ne "$expected_count" ]; then
+            echo "Only $online_count of $expected_count InService instances are online in SSM"
+            for instance_id in $instance_ids; do
+              echo "SSM status for $instance_id:"
+              aws ssm describe-instance-information \
+                --filters "Key=InstanceIds,Values=$instance_id" \
+                --output table || true
+            done
             aws ssm describe-instance-information --output table
             exit 1
           fi
@@ -296,9 +304,21 @@ jobs:
             --parameters "{\"commands\":$commands}" \
             --query 'Command.CommandId' --output text)
 
-          for instance_id in $instance_ids; do
-            aws ssm wait command-executed --command-id "$command_id" --instance-id "$instance_id"
+          deployment_failed=0
+          for instance_id in $online_instance_ids; do
+            if ! aws ssm wait command-executed --command-id "$command_id" --instance-id "$instance_id"; then
+              deployment_failed=1
+              echo "Remote deployment failed on $instance_id"
+              aws ssm get-command-invocation \
+                --command-id "$command_id" \
+                --instance-id "$instance_id" \
+                --query '{Status:Status,ResponseCode:ResponseCode,StandardOutput:StandardOutputContent,StandardError:StandardErrorContent}' \
+                --output json || true
+            fi
           done
+          if [ "$deployment_failed" -ne 0 ]; then
+            exit 1
+          fi
 
       - name: Run smoke tests
         run: |

@@ -11,9 +11,14 @@ systemctl start docker
 systemctl enable docker
 
 # Install and enable the Systems Manager agent for remote deployments.
-curl -fsSL "https://s3.${AWS_REGION}.amazonaws.com/amazon-ssm-${AWS_REGION}/latest/debian_amd64/amazon-ssm-agent.deb" -o /tmp/amazon-ssm-agent.deb
-dpkg -i /tmp/amazon-ssm-agent.deb
-systemctl enable --now amazon-ssm-agent
+if command -v snap >/dev/null 2>&1; then
+  snap list amazon-ssm-agent >/dev/null 2>&1 || snap install amazon-ssm-agent --classic
+  snap start amazon-ssm-agent
+else
+  curl -fsSL "https://s3.${AWS_REGION}.amazonaws.com/amazon-ssm-${AWS_REGION}/latest/debian_amd64/amazon-ssm-agent.deb" -o /tmp/amazon-ssm-agent.deb
+  dpkg -i /tmp/amazon-ssm-agent.deb
+  systemctl enable --now amazon-ssm-agent
+fi
 
 # Install Docker Compose
 curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
