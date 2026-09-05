@@ -84,6 +84,11 @@ resource "aws_iam_role_policy" "ec2_policy" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "ec2_ssm" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
 resource "aws_iam_instance_profile" "ec2_profile" {
   name = "${var.app_name}-ec2-profile-${var.environment}"
   role = aws_iam_role.ec2_role.name
@@ -137,6 +142,16 @@ resource "aws_autoscaling_group" "app" {
   launch_template {
     id      = aws_launch_template.app.id
     version = "$Latest"
+  }
+
+  instance_refresh {
+    strategy = "Rolling"
+
+    preferences {
+      min_healthy_percentage = 50
+      instance_warmup        = 300
+    }
+
   }
 
   tag {

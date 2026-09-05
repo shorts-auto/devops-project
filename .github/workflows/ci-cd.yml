@@ -245,15 +245,32 @@ jobs:
           echo "Check GitHub Actions environment protection rules"
 
       - name: Deploy to production environment
+        env:
+          INSTANCE_TAG: myapp-instance-prod
         run: |
-          echo "Deploying to production environment..."
-          # Add your production deployment commands here
-          # Example: aws ecs update-service --cluster production --service myapp --force-new-deployment
+          instance_ids=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=$INSTANCE_TAG" "Name=instance-state-name,Values=running" \
+            --query 'Reservations[].Instances[].InstanceId' --output text)
+          test -n "$instance_ids"
+
+          commands='["set -e", "cd /opt/app", "docker-compose pull app", "docker-compose up -d --force-recreate app", "curl -fsS http://localhost:8000/health/live"]'
+          command_id=$(aws ssm send-command \
+            --instance-ids $instance_ids \
+            --document-name AWS-RunShellScript \
+            --comment "Deploy ${GITHUB_SHA}" \
+            --parameters "{\"commands\":$commands}" \
+            --query 'Command.CommandId' --output text)
+
+          for instance_id in $instance_ids; do
+            aws ssm wait command-executed --command-id "$command_id" --instance-id "$instance_id"
+          done
 
       - name: Run smoke tests
         run: |
-          echo "Running smoke tests against production..."
-          # Add smoke test commands here
+          alb_dns=$(aws elbv2 describe-load-balancers \
+            --names myapp-alb-prod --query 'LoadBalancers[0].DNSName' --output text)
+          curl --fail --silent --show-error "http://$alb_dns/health/live"
+          curl --fail --silent --show-error "http://$alb_dns/" | grep -q "Ops Console"
 
       - name: Notify deployment
         if: success()
