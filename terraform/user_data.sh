@@ -44,7 +44,6 @@ EOF
 
 # Create a docker-compose file that runs the app container and exposes the ALB health endpoint
 cat > docker-compose.yml <<EOF
-version: "3.9"
 services:
   app:
     image: ${APP_NAME}:latest
